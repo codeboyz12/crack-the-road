@@ -1,0 +1,40 @@
+# Environment
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+services/frontend/node_modules/
+
+# Uploads (user data)
+services/api/uploads/
+uploads/
+
+# Model weights
+models/
+*.pt
+*.onnx
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+.vite/
+
+# SSL certs
+nginx/ssl/
+
+# Docker volumes (local)
+postgres_data/
+redis_data/

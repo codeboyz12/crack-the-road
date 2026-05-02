@@ -1,10 +1,16 @@
 import { useParams, Link } from 'react-router-dom'
 import { useReport } from '../hooks/useReports'
 
-const API = import.meta.env.VITE_API_URL || ''
-
 const SEVERITY_COLORS: Record<string, string> = {
   low: '#22c55e', medium: '#f59e0b', high: '#ef4444', critical: '#7c3aed',
+}
+
+const CRACK_LABEL: Record<string, string> = {
+  alligator_crack:               'Alligator Crack (ผิวแตกลายจระเข้)',
+  deep_foundation_consolidation: 'Deep Foundation Consolidation (ทรุดตัวในดินลึก)',
+  pot_hole:                      'Pot Hole (หลุมบ่อ)',
+  reflection_crack:              'Reflection Crack (รอยแตกสะท้อน)',
+  none:                          'ไม่พบความเสียหาย',
 }
 
 export default function ReportDetail() {
@@ -25,7 +31,7 @@ export default function ReportDetail() {
         <p style={{ color: '#64748b', fontSize: 13, marginBottom: 20 }}>ID: {report.id}</p>
 
         <img
-          src={`${API}${report.image_path}`}
+          src={report.image_path}
           alt="crack"
           style={{ width: '100%', borderRadius: 8, marginBottom: 20, maxHeight: 400, objectFit: 'cover' }}
         />
@@ -45,7 +51,7 @@ export default function ReportDetail() {
           <div style={{ background: '#1e293b', borderRadius: 8, padding: 16 }}>
             <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>ผลการตรวจจับ AI</h2>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontWeight: 600, fontSize: 18 }}>{d.crack_type ?? '-'}</span>
+              <span style={{ fontWeight: 600, fontSize: 18 }}>{d.crack_type ? (CRACK_LABEL[d.crack_type] ?? d.crack_type) : '-'}</span>
               {d.severity && (
                 <span style={{ background: SEVERITY_COLORS[d.severity], color: '#fff', padding: '3px 10px', borderRadius: 4, fontSize: 13 }}>
                   {d.severity}
@@ -59,7 +65,11 @@ export default function ReportDetail() {
               </div>
               <span style={{ fontSize: 13 }}>{(d.confidence * 100).toFixed(1)}%</span>
             </div>
-            <p style={{ fontSize: 12, color: '#64748b' }}>Model: {d.model_name} · {new Date(d.processed_at).toLocaleString('th-TH')}</p>
+            <p style={{ fontSize: 12, color: '#64748b' }}>
+              Model: {d.model_name}{d.model_version ? ` v${d.model_version}` : ''}
+              {d.inference_ms != null ? ` · ${d.inference_ms}ms` : ''}
+              {' · '}{new Date(d.processed_at).toLocaleString('th-TH')}
+            </p>
           </div>
         )}
 

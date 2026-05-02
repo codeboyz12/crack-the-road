@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 import aiofiles
 
 from core.database import get_db
@@ -16,6 +17,7 @@ from models.report import Report, AIDetection
 from schemas.report import ReportOut, ReportListOut, ReviewAction
 from services.geo_service import reverse_geocode
 from services.notification import check_alert_thresholds, publish_event
+from services.task_queue import enqueue_detection
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 
@@ -75,6 +77,7 @@ async def create_report(
     await db.refresh(report)
 
     await publish_event("report.created", {"report_id": str(report.id)})
+    enqueue_detection(str(report.id))
 
     return report
 
@@ -96,7 +99,7 @@ async def list_reports(
     total_result = await db.execute(select(func.count()).select_from(q.subquery()))
     total = total_result.scalar() or 0
 
-    q = q.order_by(Report.reported_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    q = q.options(selectinload(Report.ai_detection)).order_by(Report.reported_at.desc()).offset((page - 1) * page_size).limit(page_size)
     result = await db.execute(q)
     items = result.scalars().all()
 
@@ -105,7 +108,11 @@ async def list_reports(
 
 @router.get("/{report_id}", response_model=ReportOut)
 async def get_report(report_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Report).where(Report.id == report_id))
+    result = await db.execute(
+        select(Report)
+        .options(selectinload(Report.ai_detection))
+        .where(Report.id == report_id)
+    )
     report = result.scalar_one_or_none()
     if not report:
         raise HTTPException(404, "Report not found")
@@ -129,7 +136,7 @@ async def review_report(
     report.reviewed_at = datetime.utcnow()
     report.review_note = body.note
     await db.commit()
-    await db.refresh(report)
+    await db.refresh(report, ["ai_detection"])
 
     if report.status == "verified" and report.province:
         await check_alert_thresholds(report.province, db)

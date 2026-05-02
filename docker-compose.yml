@@ -40,7 +40,8 @@ services:
       AI_PROVIDER: ${AI_PROVIDER:-mock}
       AI_CONFIDENCE_THRESHOLD: ${AI_CONFIDENCE_THRESHOLD:-0.6}
     volumes:
-      - uploads:/app/uploads
+      - ./services/api:/app
+      - ./uploads:/app/uploads
     ports:
       - "8000:8000"
     depends_on:
@@ -63,7 +64,7 @@ services:
       MODEL_PATH: /models/crack_yolov8.pt
       TRITON_URL: ${TRITON_URL:-http://triton:8001}
     volumes:
-      - uploads:/app/uploads
+      - ./uploads:/app/uploads
       - ./models:/models:ro
     depends_on:
       - api
@@ -76,7 +77,7 @@ services:
       dockerfile: Dockerfile
     container_name: rcm-frontend
     environment:
-      VITE_API_URL: http://api:8000
+      API_URL: http://api:8000
       VITE_MAPBOX_TOKEN: ${MAPBOX_TOKEN:-}
     volumes:
       - ./services/frontend/src:/app/src
@@ -116,4 +117,3 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  uploads:

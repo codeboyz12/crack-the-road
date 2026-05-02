@@ -5,14 +5,11 @@ from enum import Enum
 
 
 class CrackType(str, Enum):
-    LONGITUDINAL = "longitudinal"
-    TRANSVERSE   = "transverse"
-    ALLIGATOR    = "alligator"
-    POTHOLE      = "pothole"
-    EDGE_CRACK   = "edge_crack"
-    BLOCK_CRACK  = "block_crack"
-    DEPRESSION   = "depression"
-    NONE         = "none"
+    ALLIGATOR_CRACK               = "alligator_crack"
+    DEEP_FOUNDATION_CONSOLIDATION = "deep_foundation_consolidation"
+    POT_HOLE                      = "pot_hole"
+    REFLECTION_CRACK              = "reflection_crack"
+    NONE                          = "none"
 
 
 class Severity(str, Enum):
@@ -54,10 +51,11 @@ class AIProvider(ABC):
     def confidence_to_severity(self, confidence: float, crack_type: CrackType) -> Severity:
         if crack_type == CrackType.NONE:
             return Severity.LOW
-        if confidence >= 0.85 or crack_type in (CrackType.ALLIGATOR, CrackType.POTHOLE):
+        # Fixed severity per manual — confidence only affects NONE case
+        if crack_type in (CrackType.DEEP_FOUNDATION_CONSOLIDATION, CrackType.POT_HOLE):
             return Severity.CRITICAL
-        if confidence >= 0.70:
+        if crack_type == CrackType.ALLIGATOR_CRACK:
             return Severity.HIGH
-        if confidence >= 0.50:
+        if crack_type == CrackType.REFLECTION_CRACK:
             return Severity.MEDIUM
         return Severity.LOW

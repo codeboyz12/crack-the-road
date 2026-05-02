@@ -4,13 +4,10 @@ from pathlib import Path
 from .base import AIProvider, DetectionResult, BoundingBox, CrackType, Severity
 
 YOLO_CLASS_MAP = {
-    0: CrackType.LONGITUDINAL,
-    1: CrackType.TRANSVERSE,
-    2: CrackType.ALLIGATOR,
-    3: CrackType.POTHOLE,
-    4: CrackType.EDGE_CRACK,
-    5: CrackType.BLOCK_CRACK,
-    6: CrackType.DEPRESSION,
+    0: CrackType.ALLIGATOR_CRACK,
+    1: CrackType.DEEP_FOUNDATION_CONSOLIDATION,
+    2: CrackType.POT_HOLE,
+    3: CrackType.REFLECTION_CRACK,
 }
 
 

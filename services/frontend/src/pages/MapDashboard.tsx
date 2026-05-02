@@ -8,23 +8,17 @@ const SEVERITY_COLORS: Record<string, string> = {
 }
 
 const CRACK_TYPE_LABELS: Record<string, string> = {
-  longitudinal: 'รอยแตกตามยาว',
-  transverse:   'รอยแตกขวาง',
-  alligator:    'ผิวหนังจระเข้',
-  pothole:      'หลุมบ่อ',
-  edge_crack:   'รอยแตกขอบ',
-  block_crack:  'รอยแตกบล็อก',
-  depression:   'ผิวถนนยุบ',
+  alligator_crack:               'Alligator Crack',
+  deep_foundation_consolidation: 'Deep Foundation Consolidation',
+  pot_hole:                      'Pot Hole',
+  reflection_crack:              'Reflection Crack',
 }
 
 const CRACK_TYPE_ICONS: Record<string, string> = {
-  longitudinal: '⟶',
-  transverse:   '⟷',
-  alligator:    '⬡',
-  pothole:      '◎',
-  edge_crack:   '⌐',
-  block_crack:  '⊞',
-  depression:   '▽',
+  alligator_crack:               '⬡',
+  deep_foundation_consolidation: '▽',
+  pot_hole:                      '◎',
+  reflection_crack:              '⟷',
 }
 
 export default function MapDashboard() {

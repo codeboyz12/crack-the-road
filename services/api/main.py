@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 import os
 
 from core.config import settings
-from routers import reports, map, alerts, admin
+from routers import reports, map, alerts, admin, auth, stats
 
 
 @asynccontextmanager
@@ -28,10 +28,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(reports.router)
 app.include_router(map.router)
 app.include_router(alerts.router)
 app.include_router(admin.router)
+app.include_router(stats.router)
 
 app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 

@@ -26,8 +26,10 @@ class MockYOLOProvider(AIProvider):
             )
 
         crack_type = random.choice([
-            CrackType.LONGITUDINAL, CrackType.TRANSVERSE,
-            CrackType.ALLIGATOR, CrackType.POTHOLE,
+            CrackType.ALLIGATOR_CRACK,
+            CrackType.DEEP_FOUNDATION_CONSOLIDATION,
+            CrackType.POT_HOLE,
+            CrackType.REFLECTION_CRACK,
         ])
         confidence = random.uniform(0.55, 0.97)
 

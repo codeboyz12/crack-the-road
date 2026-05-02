@@ -62,11 +62,13 @@ CREATE TABLE ai_detections (
     id              UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     report_id       UUID REFERENCES reports(id) ON DELETE CASCADE,
 
-    crack_type      VARCHAR(50)
+    crack_type      VARCHAR(60)
                     CHECK (crack_type IN (
-                        'longitudinal', 'transverse', 'alligator',
-                        'pothole', 'edge_crack', 'block_crack',
-                        'depression', 'none'
+                        'alligator_crack',
+                        'deep_foundation_consolidation',
+                        'pot_hole',
+                        'reflection_crack',
+                        'none'
                     )),
     severity        VARCHAR(20)
                     CHECK (severity IN ('low', 'medium', 'high', 'critical')),

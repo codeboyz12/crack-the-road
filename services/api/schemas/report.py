@@ -11,6 +11,8 @@ class AIDetectionOut(BaseModel):
     confidence: float
     detections: Optional[list]
     model_name: Optional[str]
+    model_version: Optional[str]
+    inference_ms: Optional[int]
     processed_at: datetime
 
     class Config:

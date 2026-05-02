@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import { MOCK_ADMIN_QUEUE, MOCK_ADMIN_STATS } from '../mockData'
 
 export interface AIDetection {
   crack_type: string | null
@@ -8,6 +7,8 @@ export interface AIDetection {
   confidence: number
   detections: unknown[]
   model_name: string | null
+  model_version: string | null
+  inference_ms: number | null
   processed_at: string
 }
 
@@ -60,16 +61,21 @@ export function useClusterData() {
   })
 }
 
-export function useAdminQueue() {
+export interface AdminQueuePage {
+  items: Report[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export function useAdminQueue(page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: ['admin-queue'],
+    queryKey: ['admin-queue', page, pageSize],
     queryFn: async () => {
-      try {
-        const { data } = await axios.get('/api/v1/admin/queue')
-        return data as Report[]
-      } catch {
-        return MOCK_ADMIN_QUEUE as unknown as Report[]
-      }
+      const { data } = await axios.get('/api/v1/admin/queue', {
+        params: { page, page_size: pageSize },
+      })
+      return data as AdminQueuePage
     },
     refetchInterval: 15_000,
   })
@@ -90,12 +96,8 @@ export function useAdminStats() {
   return useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      try {
-        const { data } = await axios.get('/api/v1/admin/stats')
-        return data as AdminStats
-      } catch {
-        return MOCK_ADMIN_STATS as AdminStats
-      }
+      const { data } = await axios.get('/api/v1/admin/stats')
+      return data as AdminStats
     },
     refetchInterval: 30_000,
   })

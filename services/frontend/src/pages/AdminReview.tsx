@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useQueryClient } from '@tanstack/react-query'
@@ -82,12 +82,37 @@ function AIPredictionPanel({ report }: { report: Report }) {
 }
 
 export default function AdminReview() {
-  const [page, setPage] = useState(1)
-  const [note, setNote] = useState<Record<string, string>>({})
-  const qc              = useQueryClient()
+  const [page, setPage]   = useState(1)
+  const [note, setNote]   = useState<Record<string, string>>({})
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimer        = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const qc                = useQueryClient()
 
   const { data, isLoading } = useAdminQueue(page, PAGE_SIZE)
   const { data: stats }     = useAdminStats()
+
+  // Real-time updates via WebSocket
+  useEffect(() => {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const ws = new WebSocket(`${protocol}//${location.host}/ws/reports`)
+
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data) as { event: string; report?: { province?: string } }
+        if (msg.event === 'report.created') {
+          qc.invalidateQueries({ queryKey: ['admin-queue'] })
+          qc.invalidateQueries({ queryKey: ['admin-stats'] })
+          const loc = msg.report?.province ?? 'ไม่ระบุ'
+          setToast(`รายงานใหม่เข้ามาจาก ${loc}`)
+          if (toastTimer.current) clearTimeout(toastTimer.current)
+          toastTimer.current = setTimeout(() => setToast(null), 5000)
+        }
+      } catch { /* ignore malformed frames */ }
+    }
+
+    ws.onerror = () => { /* reconnect handled by browser */ }
+    return () => ws.close()
+  }, [qc])
 
   const items    = data?.items ?? []
   const total    = data?.total ?? 0
@@ -110,6 +135,15 @@ export default function AdminReview() {
           รายการทั้งหมด {total.toLocaleString()} รายการ
         </span>
       </header>
+
+      {/* Real-time toast */}
+      {toast && (
+        <div style={{ background: '#15803d', color: '#fff', padding: '10px 24px', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8, animation: 'slideDown 0.2s ease' }}>
+          <span style={{ fontSize: 16 }}>🔔</span>
+          {toast}
+          <button onClick={() => setToast(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, lineHeight: 1, opacity: 0.7 }}>×</button>
+        </div>
+      )}
 
       {/* Stats bar */}
       {stats && (

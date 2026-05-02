@@ -18,6 +18,7 @@ from schemas.report import ReportOut, ReportListOut, ReviewAction
 from services.geo_service import reverse_geocode
 from services.notification import check_alert_thresholds, publish_event
 from services.task_queue import enqueue_detection
+from routers.ws import manager as ws_manager
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 
@@ -78,6 +79,19 @@ async def create_report(
 
     await publish_event("report.created", {"report_id": str(report.id)})
     enqueue_detection(str(report.id))
+
+    await ws_manager.broadcast({
+        "event": "report.created",
+        "report": {
+            "id": str(report.id),
+            "province": report.province,
+            "district": report.district,
+            "lat": float(report.lat),
+            "lng": float(report.lng),
+            "status": report.status,
+            "reported_at": report.reported_at.isoformat(),
+        },
+    })
 
     return report
 

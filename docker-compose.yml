@@ -60,7 +60,9 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/road_crack_db
       REDIS_URL: redis://redis:6379/0
-      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      AI_PROVIDER: ${AI_PROVIDER:-onnx}
+      STAGE1_MODEL_PATH: ${STAGE1_MODEL_PATH:-/models/stage1_efficientnet_b0.onnx}
+      STAGE2_MODEL_PATH: ${STAGE2_MODEL_PATH:-/models/mobilenet_v2_model.onnx}
       MODEL_PATH: /models/crack_yolov8.pt
       TRITON_URL: ${TRITON_URL:-http://triton:8001}
     volumes:
@@ -84,6 +86,21 @@ services:
       - ./services/frontend/index.html:/app/index.html
     ports:
       - "3000:3000"
+    depends_on:
+      - api
+
+  reporter:
+    build:
+      context: ./services/reporter
+      dockerfile: Dockerfile
+    container_name: rcm-reporter
+    environment:
+      API_URL: http://api:8000
+    volumes:
+      - ./services/reporter/src:/app/src
+      - ./services/reporter/index.html:/app/index.html
+    ports:
+      - "3001:3001"
     depends_on:
       - api
 
@@ -113,6 +130,7 @@ services:
     depends_on:
       - api
       - frontend
+      - reporter
 
 volumes:
   postgres_data:

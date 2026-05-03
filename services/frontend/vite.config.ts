@@ -9,6 +9,7 @@ export default defineConfig({
     proxy: {
       '/api': { target: process.env.API_URL || 'http://localhost:8000', changeOrigin: true },
       '/uploads': { target: process.env.API_URL || 'http://localhost:8000', changeOrigin: true },
+      '/ws': { target: process.env.API_URL || 'http://localhost:8000', changeOrigin: true, ws: true },
     },
   },
 })

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import CrackMap from '../components/CrackMap'
+import AlertBanner from '../components/AlertBanner'
 import { useClusterData, useAdminStats } from '../hooks/useReports'
 import { useAlertEvents } from '../hooks/useAlerts'
 
@@ -36,6 +37,7 @@ export default function MapDashboard() {
         <nav style={{ marginLeft: 'auto', display: 'flex', gap: 16 }}>
           <Link to="/" style={{ color: '#94a3b8', fontSize: 14 }}>แผนที่</Link>
           <Link to="/admin" style={{ color: '#94a3b8', fontSize: 14 }}>Admin Review</Link>
+          <Link to="/alerts" style={{ color: '#94a3b8', fontSize: 14 }}>Alert Settings</Link>
         </nav>
       </header>
 
@@ -85,11 +87,7 @@ export default function MapDashboard() {
       )}
 
       {/* Alert banner */}
-      {recentAlerts.length > 0 && (
-        <div style={{ background: '#7c3aed', padding: '8px 24px', fontSize: 13 }}>
-          🔔 แจ้งเตือน: {recentAlerts.map(a => `${a.province} (${a.report_count} รายงาน)`).join(' · ')}
-        </div>
-      )}
+      <AlertBanner events={recentAlerts} />
 
       {/* Main layout */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

@@ -66,6 +66,7 @@ services:
       MODEL_PATH: /models/crack_yolov8.pt
       TRITON_URL: ${TRITON_URL:-http://triton:8001}
     volumes:
+      - ./services/ai-worker:/app
       - ./uploads:/app/uploads
       - ./models:/models:ro
     depends_on:

@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import MapDashboard from './pages/MapDashboard'
 import AdminReview from './pages/AdminReview'
 import ReportDetail from './pages/ReportDetail'
+import AlertSettings from './pages/AlertSettings'
 import 'leaflet/dist/leaflet.css'
 import './index.css'
 
@@ -17,6 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/" element={<MapDashboard />} />
           <Route path="/admin" element={<AdminReview />} />
+          <Route path="/alerts" element={<AlertSettings />} />
           <Route path="/reports/:id" element={<ReportDetail />} />
         </Routes>
       </BrowserRouter>

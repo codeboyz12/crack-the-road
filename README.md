@@ -53,7 +53,7 @@ Reporter (Mobile/Web)
 |---|---|
 | Backend API | FastAPI + SQLAlchemy (async) |
 | Database | PostgreSQL 15 + PostGIS 3.3 |
-| AI Worker | Celery + ONNX Runtime (pluggable providers) |
+| AI Worker | Celery + psycopg2 (sync DB) + ONNX Runtime (pluggable providers) |
 | Message Queue | Redis 7 (task queue + Pub/Sub events) |
 | Frontend | React 18 + Vite + Leaflet.js |
 | Reverse Proxy | Nginx |
@@ -309,6 +309,19 @@ For higher volume (>1,000 reports/day):
 ├── scripts/
 │   └── seed_demo_data.py
 └── docker-compose.yml
+```
+
+## Docker Build Notes
+
+The `ai-worker` Dockerfile installs each heavy Python package in a separate `RUN` layer. This means Docker caches every successfully installed package — if a download times out on a slow connection, re-running the build only re-downloads the one that failed.
+
+```bash
+# Build only the ai-worker (fastest iteration)
+docker compose build ai-worker && docker compose up --no-deps -d ai-worker
+
+# Verify the correct DB driver is active inside the container
+docker exec rcm-ai-worker python -c "from tasks.detect_crack import _SYNC_DB_URL; print(_SYNC_DB_URL)"
+# Expected: postgresql+psycopg2://...
 ```
 
 ## Security Checklist

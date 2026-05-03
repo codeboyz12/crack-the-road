@@ -75,7 +75,11 @@ async def create_report(
     )
     db.add(report)
     await db.commit()
-    await db.refresh(report)
+
+    result = await db.execute(
+        select(Report).options(selectinload(Report.ai_detection)).where(Report.id == report.id)
+    )
+    report = result.scalar_one()
 
     await publish_event("report.created", {"report_id": str(report.id)})
     enqueue_detection(str(report.id))

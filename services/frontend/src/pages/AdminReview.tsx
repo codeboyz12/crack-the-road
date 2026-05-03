@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useQueryClient } from '@tanstack/react-query'
-import { useAdminQueue, useAdminStats, type Report } from '../hooks/useReports'
+import { useAdminQueue, useAdminStats, getAuthHeader, type Report } from '../hooks/useReports'
+import { useAuth } from '../context/AuthContext'
 
 const PAGE_SIZE = 20
 
@@ -87,6 +88,8 @@ export default function AdminReview() {
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer        = useRef<ReturnType<typeof setTimeout> | null>(null)
   const qc                = useQueryClient()
+  const { logout, email, role } = useAuth()
+  const navigate          = useNavigate()
 
   const { data, isLoading } = useAdminQueue(page, PAGE_SIZE)
   const { data: stats }     = useAdminStats()
@@ -119,9 +122,20 @@ export default function AdminReview() {
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   async function review(id: string, action: 'approve' | 'reject') {
-    await axios.patch(`/api/v1/reports/${id}/review`, { action, note: note[id] })
-    qc.invalidateQueries({ queryKey: ['admin-queue'] })
-    qc.invalidateQueries({ queryKey: ['admin-stats'] })
+    try {
+      await axios.patch(
+        `/api/v1/reports/${id}/review`,
+        { action, note: note[id] },
+        { headers: getAuthHeader() },
+      )
+      qc.invalidateQueries({ queryKey: ['admin-queue'] })
+      qc.invalidateQueries({ queryKey: ['admin-stats'] })
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        logout()
+        navigate('/login')
+      }
+    }
   }
 
   return (
@@ -131,8 +145,19 @@ export default function AdminReview() {
       <header style={{ background: '#1e293b', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 16, borderBottom: '1px solid #334155' }}>
         <Link to="/" style={{ color: '#94a3b8', fontSize: 14 }}>← แผนที่</Link>
         <span style={{ fontSize: 18, fontWeight: 700 }}>Admin Review Queue</span>
-        <span style={{ marginLeft: 'auto', fontSize: 13, color: '#64748b' }}>
-          รายการทั้งหมด {total.toLocaleString()} รายการ
+        <span style={{ marginLeft: 'auto', fontSize: 13, color: '#64748b', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span>รายการทั้งหมด {total.toLocaleString()} รายการ</span>
+          {email && (
+            <span style={{ color: '#94a3b8' }}>
+              {email} <span style={{ color: '#475569' }}>({role})</span>
+            </span>
+          )}
+          <button
+            onClick={() => { logout(); navigate('/login') }}
+            style={{ background: '#334155', color: '#e2e8f0', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer', fontSize: 12 }}
+          >
+            ออกจากระบบ
+          </button>
         </span>
       </header>
 

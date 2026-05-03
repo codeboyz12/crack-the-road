@@ -1,6 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 
+export function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem('rcm_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 export interface AIDetection {
   crack_type: string | null
   severity: string | null
@@ -74,6 +79,7 @@ export function useAdminQueue(page = 1, pageSize = 20) {
     queryFn: async () => {
       const { data } = await axios.get('/api/v1/admin/queue', {
         params: { page, page_size: pageSize },
+        headers: getAuthHeader(),
       })
       return data as AdminQueuePage
     },
@@ -96,7 +102,9 @@ export function useAdminStats() {
   return useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const { data } = await axios.get('/api/v1/admin/stats')
+      const { data } = await axios.get('/api/v1/admin/stats', {
+        headers: getAuthHeader(),
+      })
       return data as AdminStats
     },
     refetchInterval: 30_000,
